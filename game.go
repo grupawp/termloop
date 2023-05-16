@@ -1,9 +1,11 @@
 package termloop
 
 import (
+	"context"
 	"fmt"
-	"github.com/nsf/termbox-go"
 	"time"
+
+	"github.com/nsf/termbox-go"
 )
 
 // Represents a top-level Termloop application.
@@ -76,7 +78,7 @@ func (g *Game) SetEndKey(key Key) {
 
 // Start starts a Game running. This should be the last thing called in your
 // main function. By default, the escape key exits.
-func (g *Game) Start() {
+func (g *Game) Start(ctx context.Context) {
 	// Init Termbox
 	err := termbox.Init()
 	termbox.SetOutputMode(termbox.Output256)
@@ -100,6 +102,8 @@ mainloop:
 		clock = update
 
 		select {
+		case <-ctx.Done():
+			break mainloop
 		case ev := <-g.input.eventQ:
 			if ev.Key == g.input.endKey {
 				break mainloop
