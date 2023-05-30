@@ -1,5 +1,9 @@
 package termloop
 
+import (
+	"sync"
+)
+
 // Text represents a string that can be drawn to the screen.
 type Text struct {
 	x      int
@@ -8,6 +12,7 @@ type Text struct {
 	bg     Attr
 	text   []rune
 	canvas []Cell
+	mu     sync.Mutex
 }
 
 // NewText creates a new Text, at position (x, y). It sets the Text's
@@ -34,6 +39,9 @@ func (t *Text) Tick(ev Event) {}
 
 // Draw draws the Text to the Screen s.
 func (t *Text) Draw(s *Screen) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
 	w, _ := t.Size()
 	for i := 0; i < w; i++ {
 		s.RenderCell(t.x+i, t.y, &t.canvas[i])
@@ -63,6 +71,9 @@ func (t *Text) Text() string {
 
 // SetText sets the text of the Text to be text.
 func (t *Text) SetText(text string) {
+	t.mu.Lock()
+	defer t.mu.Unlock()
+
 	t.text = []rune(text)
 	c := make([]Cell, len(t.text))
 	for i := range c {
